@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MainPage</title>
+</head>
+<body>
+    <h1>Todo app</h1>
+    <p id="timer"></p>
+    <button id="timer-stopper">Stop timer</button>
+    <button id="timer-starter">Start timer</button>
+    <form action="/" method="post">
+        <label for="todo">What To Do? </label><br><br>
+        <input type="text" class="input" name="todo" placeholder="What to do ?"><br><br>
+        
+        <button type="submit">Submit</button>
+    </form>
+    <ul id="todo-list">
+        <% todos.forEach((todo) => { %>
+            <li data-id="<%= todo._id %>" id="task-<%= todo._id %>">
+                <div>
+                    <%= todo.todo %>
+                </div>
+                <button data-id="<%= todo._id %>" class="delete-button">Delete</button>
+                <!-- <form action="" method="post">
+                    <input type="hidden" name="task" value="<%= todo.todo %>">
+                </form> -->
+                <button data-id="<%= todo._id %>" class="update-button">Update</button>
+              </li>
+        <% }); %>
+      </ul>
+    <script>
+            let loop_val = 1;
+            let i = 0;
+            let interval = undefined ;
+            
+            function formatTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secondsOnly = Math.floor(seconds % 60);
+                const milliseconds = Math.round((seconds - Math.floor(seconds)) * 1000);
+
+                const hoursString = hours > 0 ? `${hours}:` : '';
+                const minutesString = minutes > 0 ? `${minutes}:` : '00:';
+                const secondsString = secondsOnly < 10 ? `0${secondsOnly}` : `${secondsOnly}`;
+                const millisecondsString = milliseconds < 10 ? `00${milliseconds}` : milliseconds < 100 ? `0${milliseconds}` : `${milliseconds}`;
+
+                return `${hoursString}${minutesString}${secondsString}.${millisecondsString}`;
+            }
+
+
+            interval = setInterval(()=>{
+                i+=0.01;
+                document.querySelector('#timer').innerHTML = formatTime(i);
+            } , loop_val);
+            document.querySelector('#timer-stopper').addEventListener('click', (event) => {
+                interval = clearInterval(interval);
+                console.log(interval);
+            });
+            document.querySelector('#timer-starter').addEventListener('click', (event) => {
+                if(interval == undefined){
+                    interval = setInterval(()=>{
+                    i+=0.01;
+                    document.querySelector('#timer').innerHTML = formatTime(i);
+                } , loop_val);
+                }
+            });
+        document.querySelectorAll('.update-button').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                const id = event.target.dataset.id;
+                const liElement = document.getElementById(`task-${id}`);
+                const inputElement = document.querySelector('.input');
+                console.log(inputElement.value);
+                fetch(`/todos/update/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ task: inputElement.value}),
+                    }).then((response) => {
+                            console.log(response);
+                            if (response.ok) {
+                            liElement.children[0].innerHTML = inputElement.value;
+                            console.log('Successfully updated task');
+                            } else {
+                            console.error('Error updating task');
+                            }
+                        });
+            });
+        });
+        document.querySelectorAll('.delete-button').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                const id = event.target.dataset.id;
+                const liElement = document.getElementById(`task-${id}`);
+                fetch(`/todos/${id}`, { method: 'DELETE' })
+                .then((response) => {
+                    if (response.ok) {
+                        liElement.parentNode.removeChild(liElement);
+                        console.log('Successfully deleted task');
+                    // Optionally, update the UI to remove the task from the list
+                    } else {
+                        console.error('Error deleting task');
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
