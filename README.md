@@ -14,7 +14,7 @@ This is a simple login and registration application built with Node.js, Express,
 To get started, you need to have Node.js and MongoDB installed on your machine.
 
 1. Clone the repository to your local machine.
-git clone https://github.com/YOUR_USERNAME/LOGIN_REGISTRATION_APP.git
+git clone https://github.com/Mouados-byte/Login.git
 
 Copy code
 
